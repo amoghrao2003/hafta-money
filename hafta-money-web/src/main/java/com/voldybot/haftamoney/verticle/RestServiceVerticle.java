@@ -12,16 +12,17 @@ import io.vertx.ext.web.RoutingContext;
 
 public class RestServiceVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestServiceVerticle.class);
+
     @Override
     public void start(Future<Void> future) {
         LOGGER.info("Deploying RestServiceVerticle........");
         Router router = Router.router(vertx);
-        router.get("/api/testing/articles/article/:id")
-                .handler(this::getArticles);
 
-        vertx.createHttpServer()
-                .requestHandler(router::accept)
-                .listen(config().getInteger("http.port", 8080), result -> {
+        // define routes
+        router.get("/api/testing/articles/article/:id").handler(this::getArticles);
+
+        vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 8080),
+                result -> {
                     if (result.succeeded()) {
                         future.complete();
                     } else {
@@ -32,15 +33,11 @@ public class RestServiceVerticle extends AbstractVerticle {
     }
 
     private void getArticles(RoutingContext routingContext) {
-        String articleId = routingContext.request()
-                .getParam("id");
+        String articleId = routingContext.request().getParam("id");
         Article article = new Article(articleId, "This is an intro to vertx", "baeldung", "01-02-2017", 1578);
 
-        routingContext.response()
-                .putHeader("content-type", "application/json")
-                .setStatusCode(200)
+        routingContext.response().putHeader("content-type", "application/json").setStatusCode(200)
                 .end(Json.encodePrettily(article));
     }
 
 }
-

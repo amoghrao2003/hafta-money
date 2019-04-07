@@ -17,6 +17,8 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(Future<Void> future) {
         LOGGER.info("Welcome to Vertx");
+        //generate todays profit list using today-earning calendar... load at start of app .. also schedule every X minutes
+        
     }
 
     @Override
