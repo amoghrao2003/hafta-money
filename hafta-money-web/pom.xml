@@ -8,7 +8,7 @@
 	<name>hafta-money-web</name>
 
 	<properties>
-		<vertx.version>3.6.0</vertx.version>
+		<vertx.version>3.7.0</vertx.version>
 		<maven-shade-plugin.version>2.3</maven-shade-plugin.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
@@ -17,6 +17,18 @@
 
 
 	<dependencies>
+	<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+<dependency>
+    <groupId>commons-io</groupId>
+    <artifactId>commons-io</artifactId>
+    <version>2.6</version>
+</dependency>
+	
+		<dependency>
+ 			<groupId>io.vertx</groupId>
+ 			<artifactId>vertx-web-client</artifactId>
+ 			<version>${vertx.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-core</artifactId>
