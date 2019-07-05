@@ -1,7 +1,14 @@
 package com.voldybot.haftamoney.verticle;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ReadContext;
 import com.voldybot.haftamoney.model.Article;
 import com.voldybot.haftamoney.utils.Common;
+import com.voldybot.haftamoney.utils.EnvData;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -19,6 +26,7 @@ import io.vertx.ext.web.client.WebClientOptions;
 public class RestServiceVerticle extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestServiceVerticle.class);
     WebClient client;
+    EnvData envData;
     @Override
     public void start(Future<Void> future) {
         LOGGER.info("Deploying RestServiceVerticle........");
@@ -38,6 +46,7 @@ public class RestServiceVerticle extends AbstractVerticle {
                     }
                 });
         LOGGER.info("Deployment Complete RestServiceVerticle");
+        envData = new EnvData(Boolean.FALSE);
     }
 
     private void getArticles(RoutingContext routingContext) {
@@ -56,14 +65,15 @@ public class RestServiceVerticle extends AbstractVerticle {
     
     public void getUpcomingIpos(RoutingContext routingContext) {
         client
-        //.getAbs("http://api.iextrading.com/1.0/stock/market/upcoming-ipos")
-        .getAbs(Common.RestEndPoint.IDEXClient.UPCOMING_IPOS)
+        .getAbs(envData.getBaseURL()+Common.RestEndPoint.IDEXClient.VERSION
+                +Common.RestEndPoint.IDEXClient.UPCOMING_IPOS+Common.RestEndPoint.Q+envData.getPublicKey())
         .send(ar -> {
           if (ar.succeeded()) {
             HttpResponse<Buffer> response = ar.result();
             if (response.statusCode() == 200) {
-                sendSuccessResponse(response,routingContext);
-              
+                ReadContext ctx = JsonPath.parse(response.bodyAsString());
+                String viewDatas = ctx.read("$.viewData").toString();
+                sendSuccessResponse(response,routingContext,viewDatas);
             } else {
                 LOGGER.error("response.statusCode() != 200:" + response.statusCode());
             }
@@ -73,17 +83,16 @@ public class RestServiceVerticle extends AbstractVerticle {
           }
         });
     }
-
     /**
      * Send success response to the client using routingContext
      * @param response
      * @param routingContext
      */
-    private void sendSuccessResponse(HttpResponse<Buffer> response, RoutingContext routingContext) {
+    private void sendSuccessResponse(HttpResponse<Buffer> response, RoutingContext routingContext, String body) {
         LOGGER.debug("Received response with status code " + response.statusCode() + " with body " + response.bodyAsString());
         LOGGER.debug("content-type: "+response.getHeader("content-type"));
         LOGGER.debug("content-encoding: "+response.getHeader("content-encoding"));
         routingContext.response().putHeader(Common.CONTENT_TYPE, Common.APPLICATION_JSON).setStatusCode(200)
-        .end(response.bodyAsString());
+        .end(body);
     }
 }
